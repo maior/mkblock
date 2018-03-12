@@ -17,7 +17,7 @@ How to Run
 - Modify your ip-address in "Constants.java": ex) "192.168.0.4:8787"
 - Run>>"Run Main"
 - if you wanna run mkblock.jar file, click "File>>Project Structure..." in menu.
-
+![ex_screenshot](./img/sc1.png)
 
 
 Author
