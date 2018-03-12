@@ -17,7 +17,11 @@ How to Run
 - Modify your ip-address in "Constants.java": ex) "192.168.0.4:8787"
 - Run>>"Run Main"
 - if you wanna run mkblock.jar file, click "File>>Project Structure..." in menu.
-![ex_screenshot](./img/sc1.png)
+
+![ex_screenshot](./img/sc2.png)
+
+- Please, check "Include in project build"
+- make build : "Build>>Rebuild Project"
 - move to "cd ./out/artifacts/mkblock_jar"
 - Run "java -cp mkblock.jar mkii.mkblock.Main"
 - If you wanna run console mode : Run "java -cp mkblock.jar mkii.mkblock.Main console"
