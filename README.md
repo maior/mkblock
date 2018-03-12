@@ -18,7 +18,10 @@ How to Run
 - Run>>"Run Main"
 - if you wanna run mkblock.jar file, click "File>>Project Structure..." in menu.
 ![ex_screenshot](./img/sc1.png)
-
+- move to "cd ./out/artifacts/mkblock_jar"
+- Run "java -cp mkblock.jar mkii.mkblock.Main"
+- If you wanna run console mode : Run "java -cp mkblock.jar mkii.mkblock.Main console"
+- If you have console mode, Run ">> getinfo" or ">> getnewaccount" then it could be displied account values.
 
 Author
 - Kenneth Kwon - maiordba@gmail.com
