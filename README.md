@@ -1,6 +1,7 @@
 # mkblock
 Blockchain(Server)
 - This blockchain came from Codepace, which was not working. So i gotta hard time to modify many things and added client on it.
+- for test, you should run "mkblock" on 2 OS. then you can watch to be synced blocks each other.   
 - Let's me know, if someone got hard time like me. i can give to you some help. :)
 
 you have to install 2 things.
