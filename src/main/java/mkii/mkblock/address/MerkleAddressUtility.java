@@ -49,8 +49,7 @@ public class MerkleAddressUtility {
     }
 
     public boolean verifyMerkleSignature(String message, String signature, String address, long index){
-        try
-        {
+        try {
             String lamportSignature = signature.substring(0, signature.indexOf(","));
             String merkleAuthPath = signature.substring(signature.indexOf(",") + 1);
             //Holds 100 pairs, each pair containing one public and one private Lamport Key part
@@ -58,58 +57,52 @@ public class MerkleAddressUtility {
             //Will hold all 200 parts in the same order as they appear in lamportSignaturePairs
             String[] lamportSignatureParts = new String[200];
             //Populate lamportSignatureParts from lamportSignaturePairs
-            for (int i = 0; i < lamportSignaturePairs.length; i++)
-            {
+            for (int i = 0; i < lamportSignaturePairs.length; i++) {
                 lamportSignatureParts[i*2] = lamportSignaturePairs[i].substring(0, lamportSignaturePairs[i].indexOf(":"));
                 lamportSignatureParts[i*2+1] = lamportSignaturePairs[i].substring(lamportSignaturePairs[i].indexOf(":") + 1);
             }
+
             //Lamport Signatures work with binary, so we need a binary string representing the hash of the message we want verify the signature of
             String binaryToCheck = SHA256Binary(message);
             //Cozy Lamport Signatures sign the first 100 bytes of the hash. To generate a message colliding with the signature, one would need on average 2^99 tries
             binaryToCheck = binaryToCheck.substring(0, 100);
             //The Lamport Public Key will be 200 Strings in size
             String[] lamportPublicKey = new String[200];
-            for (int i = 0; i < binaryToCheck.length(); i++)
-            {
-                if (binaryToCheck.charAt(i) == '0')
-                {
-                    if (i < binaryToCheck.length() - 1) //Part of the SHA256Short group. This logic could be shortened slightly by moving one of the assignments out of these two branches--not done for clarity.
-                    {
+            for (int i = 0; i < binaryToCheck.length(); i++) {
+
+                // null check
+                if(lamportSignatureParts[i*2] == null) break;
+
+                if (binaryToCheck.charAt(i) == '0') {
+                    if (i < binaryToCheck.length() - 1) {
+                        //Part of the SHA256Short group. This logic could be shortened slightly by moving one of the assignments out of these two branches--not done for clarity.
                         lamportPublicKey[i*2] = SHA256Short(lamportSignatureParts[i*2]);
                         lamportPublicKey[i*2+1] = lamportSignatureParts[i*2+1];
-                    }
-                    else //This one is the last pair, and needs to be hashed with SHA512
-                    {
+                    } else {
+                        //This one is the last pair, and needs to be hashed with SHA512
                         lamportPublicKey[i*2] = SHA512(lamportSignatureParts[i*2]);
                         lamportPublicKey[i*2+1] = lamportSignatureParts[i*2+1];
                     }
-                }
-                else if (binaryToCheck.charAt(i) == '1')
-                {
-                    if (i < binaryToCheck.length() - 1) //Part of the SHA256Short group. This logic could be shortened slightly by moving one of the assignments out of these two branches--not done for clarity.
-                    {
+                } else if (binaryToCheck.charAt(i) == '1') {
+                    if (i < binaryToCheck.length() - 1) {
+                        //Part of the SHA256Short group. This logic could be shortened slightly by moving one of the assignments out of these two branches--not done for clarity.
                         lamportPublicKey[i*2] = lamportSignatureParts[i*2];
                         lamportPublicKey[i*2+1] = SHA256Short(lamportSignatureParts[i*2+1]);
-                    }
-                    else //This one is the last pair, and needs to be hashed with SHA512
-                    {
+                    } else {
+                        //This one is the last pair, and needs to be hashed with SHA512
                         lamportPublicKey[i*2] = lamportSignatureParts[i*2];
                         lamportPublicKey[i*2+1] = SHA512(lamportSignatureParts[i*2+1]);
                     }
-                }
-                else
-                {
+                } else {
                     return false;
                 }
             }
             String lamportPublicSignatureFull = "";
             //Populate full String to hash to get first leaf component
-            for (int i = 0; i < lamportPublicKey.length; i++)
-            {
+            for (int i = 0; i < lamportPublicKey.length; i++) {
                 lamportPublicSignatureFull += lamportPublicKey[i];
             }
-            if (verbose)
-            {
+            if (verbose) {
                 OUTPRT("lmpSig: " + lamportPublicSignatureFull);
             }
             //First leaf component; bottom layer of Merkle Tree
@@ -120,17 +113,16 @@ public class MerkleAddressUtility {
             long position = index;
             //This rollingHash will contain the hash as we calculate up the hash tree
             String rollingHash;
-            if (position % 2 == 0) //Even; rollingHash goes first
-            {
+            if (position % 2 == 0) {
+                //Even; rollingHash goes first
                 rollingHash = SHA256(leafStart + merkleAuthPathComponents[0]);
-            }
-            else //Odd; path component should go first
-            {
+            } else {
+                //Odd; path component should go first
                 rollingHash = SHA256(merkleAuthPathComponents[0] + leafStart);
             }
             position /= 2;
-            for (int i = 1; i < merkleAuthPathComponents.length - 1; i++) //Go to merkleAuthPathComponents.length - 1 because the final hash is returned in base32 and is truncated
-            {
+            //Go to merkleAuthPathComponents.length - 1 because the final hash is returned in base32 and is truncated
+            for (int i = 1; i < merkleAuthPathComponents.length - 1; i++) {
                 //Combine the current hash with the next component, which visually would lie on the same Merkle Tree layer
                 if (position % 2 == 0) {
                     //Even; rollingHash goes first

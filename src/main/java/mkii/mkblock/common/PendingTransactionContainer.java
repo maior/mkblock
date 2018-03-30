@@ -38,7 +38,8 @@ public class PendingTransactionContainer {
             }
             String[] txParts = tx.split(":");
             String inAddr = txParts[0];
-            double inAmount = Double.parseDouble(txParts[1]);
+            //double inAmount = Double.parseDouble(txParts[1]);
+            double inAmount = Double.parseDouble(txParts[2]);
             double outstandingOutgoingAmount = 0D;
             int indexOfDelta = -1;
             for (int i = 0; i < accountBalanceDeltaTables.size(); i++) {
@@ -48,7 +49,10 @@ public class PendingTransactionContainer {
                     break;
                 }
             }
+
+            //double prevBalance = dbMaster.getAddressBalance(inAddr);
             double prevBalance = dbMaster.getAddressBalance(inAddr);
+            prevBalance *= 1000000;
             if (prevBalance < inAmount + outstandingOutgoingAmount){
                 OUTPRT(inAddr + " tried to spend " + inAmount + " but only had " + (prevBalance - outstandingOutgoingAmount) + " coins.");
                 return false;

@@ -105,7 +105,7 @@ public class PeerNetworkProcessing {
                                     OUTPRT("     " + txParts[k + 1] + " mkii(s) from " + txParts[0] + " to " + txParts[k]);
                                 }
                                 OUTPRT("Total mkii sent: "+ txParts[1]);
-                                peerNetwork.broadcast("TRANSACTION " + parts[1]);
+//                                peerNetwork.broadcast("TRANSACTION " + parts[1]);
                             } else {
                                 OUTPRT("Invalid transaction: " + parts[1]);
                             }

@@ -11,7 +11,9 @@ import static mkii.mkblock.common.Constants.*;
 import static mkii.mkblock.common.Util.OUTPRT;
 
 public class BlockGenerator {
-    public static String compileBlock(long timestamp, int blockIndex, String prevBlockHash, long difficulty, int winningNonce, String ledgerHash, ArrayList<String> txs, Certificate cert, String signingAddress, String privateKey, long minerSigIndex){
+    public static String compileBlock(long timestamp, int blockIndex, String prevBlockHash, long difficulty, int winningNonce, String ledgerHash, 
+        ArrayList<String> txs, Certificate cert, String signingAddress, String privateKey, long minerSigIndex, String contentData){
+        
         OUTPRT(" [DAEMON] - " + ANSI_BLUE + "Creating block...");
         OUTPRT("\tTimestamp: " + timestamp);
         OUTPRT("\tBlock index: " + blockIndex);
@@ -21,6 +23,7 @@ public class BlockGenerator {
         OUTPRT("\tLedger hash: " + ledgerHash);
         OUTPRT("\tSigning address: " + signingAddress);
         OUTPRT("\tCertificate: " + cert);
+        OUTPRT("\tContentData: " + contentData);
 
         // Safety check
         if(minerSigIndex < 0){
@@ -28,7 +31,7 @@ public class BlockGenerator {
         }
         OUTPRT("\tMiner signature index: " + minerSigIndex);
         OUTPRT("\tPrivate key: " + privateKey);
-        System.out.print(ANSI_RESET);
+        OUTPRT(ANSI_RESET);
 
         OUTPRT("New block created and compiled");
 
@@ -54,12 +57,15 @@ public class BlockGenerator {
             String sig = new MerkleAddressUtility().getMerkleSignature(block, privateKey, minerSigIndex, signingAddress);
             OUTPRT(" [DAEMON] - Signature: " + sig);
             block += ",{" + sig + "},{" + minerSigIndex + "}";
+
+            // add content data
+            block += ",{" + contentData + "}";
             return block;
         } catch (Exception e){
             OUTPRT("***Unable to sign a block***");
             OUTPRT(" [DAEMON] - " + ANSI_RED + "Unable to sign a block!" + ANSI_RESET);
             e.printStackTrace();
-            return null;
+            return "";
         }
 
     }

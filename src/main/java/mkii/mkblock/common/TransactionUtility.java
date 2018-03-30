@@ -8,6 +8,11 @@ import static mkii.mkblock.common.Util.OUTPRT;
 
 public class TransactionUtility {
 
+    /**
+     *
+     * @param tx
+     * @return
+     */
     public static boolean isTransactionValid(String tx){
         OUTPRT("Checking validity of transaction: " + tx);
         MerkleAddressUtility merkle = new MerkleAddressUtility();
@@ -17,21 +22,39 @@ public class TransactionUtility {
                 //XXX
                 return false;
             }
-            for (int i = 0; i < txParts.length - 2; i+=2) {
-                if(!merkle.isAddressFormattedCorrectly(txParts[i])){
-                    return false; // Invalid address
-                }
 
+//            for (int i = 0; i < txParts.length - 2; i+=2) {
+//                System.out.println("txParts[" + String.valueOf(i) + "]" + txParts[i]);
+//                if(!merkle.isAddressFormattedCorrectly(txParts[i])){
+//                    return false; // Invalid address
+//                }
+//
+//            }
+
+            // destAddr::amount::defAddr::Data
+            if(!merkle.isAddressFormattedCorrectly(txParts[0]) || !merkle.isAddressFormattedCorrectly(txParts[2]) ){
+                return false; // Invalid address
             }
 
             double inAmount = Double.parseDouble(txParts[1]);
             double outAmount = 0D;
-            for (int i = 3; i < txParts.length - 2; i+=2) {
-                if (Double.parseDouble(txParts[i]) <= 0){
-                    return false;
+
+//            for (int i = 3; i < txParts.length - 2; i+=2) {
+//                OUTPRT("--> " + txParts[i]);
+//                if (Double.parseDouble(txParts[i]) <= 0){
+//                    OUTPRT("--> " + String.valueOf(Double.parseDouble(txParts[i])));
+//                    return false;
+//                }
+//                outAmount += Double.parseDouble(txParts[i]);
+//            }
+
+            for(int i=3; i<txParts.length-2; i+=2) {
+                for(int j=0; j<txParts[i].length(); j++) {
+                    outAmount += 12;
                 }
-                outAmount += Double.parseDouble(txParts[i]);
             }
+
+            OUTPRT("intAmount : " + String.valueOf(inAmount) + ", outAmount : " + String.valueOf(outAmount));
 
             if (inAmount - outAmount < 0){
                 return false; // No sudden creation of coins
@@ -51,6 +74,11 @@ public class TransactionUtility {
         return true;
     }
 
+    /**
+     *
+     * @param transactionsToSort
+     * @return
+     */
     public static ArrayList<String> sortTransactionsBySignatureIndex(ArrayList<String> transactionsToSort)
     {
         for (int i = 0; i < transactionsToSort.size(); i++)
@@ -65,40 +93,32 @@ public class TransactionUtility {
         for (int i = 0; i < transactionsToSort.size(); i++)
         {
             OUTPRT("spin1");
-            if (sortedTransactions.size() == 0)
-            {
+            if (sortedTransactions.size() == 0) {
                 sortedTransactions.add(transactionsToSort.get(0));
-            }
-            else
-            {
+            } else {
                 String address = transactionsToSort.get(i).split("::")[0];
                 long index = Long.parseLong(transactionsToSort.get(i).split("::")[transactionsToSort.get(i).split("::").length  - 1]);
                 boolean added = false;
-                for (int j = 0; j < sortedTransactions.size(); j++)
-                {
+                for (int j = 0; j < sortedTransactions.size(); j++) {
                     OUTPRT("spin2");
-                    if (sortedTransactions.get(j).split("::")[0].equals(address))
-                    {
+                    if (sortedTransactions.get(j).split("::")[0].equals(address)) {
                         String[] parts = sortedTransactions.get(j).split("::");
                         int indexToGrab = parts.length - 1;
                         String sigIndexToParse = sortedTransactions.get(j).split("::")[indexToGrab];
                         long existingSigIndex = Long.parseLong(sigIndexToParse);
-                        if (index < existingSigIndex)
-                        {
+                        if (index < existingSigIndex) {
                             //Insertion should occur before the currently-studied element
                             sortedTransactions.add(j, transactionsToSort.get(i));
                             added = true;
                             break;
-                        }
-                        else if (index == existingSigIndex)
-                        {
+                        } else if (index == existingSigIndex) {
                             //This should never happen--double-signed transaction. Discard the new one!
                             j = sortedTransactions.size();
                         }
                     }
                 }
-                if (!added)
-                {
+
+                if (!added) {
                     sortedTransactions.add(transactionsToSort.get(i));
                 }
             }

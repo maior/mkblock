@@ -24,7 +24,6 @@ public class Certificate {
 
     static {
         authorities = new HashMap<String, String>(2);
-        //authorities.put("Codepace", "A1H6CHCCRZZKW67NRSUHCQGWI4GWVYOCXGKYF6");  // Change?
         authorities.put("CureLabs", "A1H6CHCCRZZKW67NRSUHCQGWI4GWVYOCXGKYF6");  // Change?
     }
 

@@ -105,6 +105,25 @@ public class AddressManager {
         return fullTx;
     }
 
+    /**
+     *
+     * @param dest
+     * @param data
+     * @param index
+     * @return
+     */
+    public String getSignedDataTransaction(String dest, double amount, String[] data, int index) {
+        String txdata = getDefaultAddress() + "::" + amount + "::" + dest + "::" + data[1] + ":" + data[2];
+        String pKey = getDefaultPrivateKey();
+        String dAddr = getDefaultAddress();
+        OUTPRT("index : " + index);
+        OUTPRT("txdata : " + txdata);
+        OUTPRT("pKey : " + pKey + ", dAddr : " + dAddr);
+        String sig = new MerkleAddressUtility().getMerkleSignature(txdata, pKey, index, dAddr);
+        String fullTx = txdata + "::" + sig + "::" + index;
+        return fullTx;
+    }
+
     public String getDefaultAddress() {
         return addrs.get(0);
     }

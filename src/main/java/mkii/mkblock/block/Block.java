@@ -21,8 +21,9 @@ public class Block {
     public ArrayList<String> txs;
     public String minerSig;
     public long minerSigIndex;
+    public String contentData;
 
-    public Block(long timestamp, int blockIndex, String prevBlockHash, Certificate cert, long difficulty, int winningNonce, String ledgerHash, ArrayList<String> txs, String minerSig, int minerSigIndex) {
+    public Block(long timestamp, int blockIndex, String prevBlockHash, Certificate cert, long difficulty, int winningNonce, String ledgerHash, ArrayList<String> txs, String minerSig, int minerSigIndex, String contentData) {
         this.timestamp = timestamp;
         this.blockIndex = blockIndex;
         this.prevBlockHash = prevBlockHash;
@@ -33,6 +34,7 @@ public class Block {
         this.ledgerHash = ledgerHash;
         this.minerSig = minerSig;
         this.minerSigIndex = minerSigIndex;
+        this.contentData = contentData;
 
         try {
             String txString = "";
@@ -45,7 +47,10 @@ public class Block {
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             txString = txString.substring(0, txString.length() - 1);
-            String blockData = "{" + timestamp + ":" + blockIndex + ":" + prevBlockHash + ":" + difficulty + ":" + winningNonce + "},{" + txString + "},{" + txString + "}," + cert.getFullCertificate();
+            String blockData = "{" + timestamp + ":" + blockIndex + ":" + prevBlockHash + ":" + difficulty + ":" + winningNonce + "},{" + txString + "},{" + txString + "},";
+            blockData += cert.getFullCertificate();
+            blockData += contentData;
+
             this.blockHash = DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,7 +81,7 @@ public class Block {
         for (int i = 3; i < 11; i++) {
             parts[i] = partsInitial[i - 3];
         }
-        OUTPRT("Block parts: " + parts.length);
+        OUTPRT("Block parts in DB : " + parts.length);
         for (int i = 0; i < parts.length; i++) {
             String toPrint = parts[i];
             if (parts[i].length() > 40)
@@ -84,6 +89,8 @@ public class Block {
             OUTPRT("     " + i + ": " + toPrint);
         }
 
+        // It's Frist '{}'in DB file.
+        //
         String firstPart = parts[0].replace("{", "");
         firstPart = firstPart.replace("}", "");
         String[] firstPartParts = firstPart.split(":");
@@ -94,9 +101,12 @@ public class Block {
             this.difficulty = Long.parseLong(firstPartParts[3]);
             this.winningNonce = Integer.parseInt(firstPartParts[4]);
             this.ledgerHash = parts[1].replace("{", "").replace("}", "");
+            this.contentData = partsInitial[8].replace("{", "").replace("}", "");;
             String transactionsString = parts[2].replace("{", "").replace("}", "");
             this.txs = new ArrayList<String>();
-            String[] rawTransactions = transactionsString.split("\\*"); //Transactions are separated by an asterisk, as the colon, double-colon, and comma are all used in other places, and would be a pain to use here.
+
+            //Transactions are separated by an asterisk, as the colon, double-colon, and comma are all used in other places, and would be a pain to use here.
+            String[] rawTransactions = transactionsString.split("\\*");
             for (int i = 0; i < rawTransactions.length; i++) {
                 this.txs.add(rawTransactions[i]);
             }
@@ -111,17 +121,21 @@ public class Block {
                 transactionsString = "";
                 //Transaction format: FromAddress;InputAmount;ToAddress1;Output1;ToAddress2;Output2... etc.
                 for (int i = 0; i < txs.size(); i++) {
-                    if (txs.get(i).length() > 10) //Arbitrary number, make sure a transaction has some size to it
-                    {
+                    if (txs.get(i).length() > 10) {
+                        //Arbitrary number, make sure a transaction has some size to it
                         transactionsString += txs.get(i) + "*";
                     }
                 }
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
-                if (transactionsString.length() > 2) //Protect against empty transaction sets tripping errors with negative substring indices
-                {
+                if (transactionsString.length() > 2) {
+                    //Protect against empty transaction sets tripping errors with negative substring indices
                     transactionsString = transactionsString.substring(0, transactionsString.length() - 1);
                 }
-                String blockData = "{" + timestamp + ":" + blockIndex + ":" + prevBlockHash + ":" + difficulty + ":" + winningNonce + "},{" + ledgerHash + "},{" + transactionsString + "}," + cert.getFullCertificate();
+                String blockData = "{" + timestamp + ":" + blockIndex + ":" + prevBlockHash + ":" + difficulty + ":" + winningNonce + "},{" + ledgerHash + "},{" + transactionsString + "},";
+                        blockData += cert.getFullCertificate();
+                        blockData += getContentData();
+
+                OUTPRT("blockData : " + blockData);
                 this.blockHash = DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
 
             } catch (Exception e) {
@@ -132,8 +146,28 @@ public class Block {
         }
     }
 
+    /**
+     * get Miner
+     * @return
+     */
     public String getMiner() {
         return cert.redeemAddress;
+    }
+
+    /**
+     * get ContentData
+     * @return
+     */
+    public String getContentData() {
+        return ",{" + this.contentData + "}";
+    }
+
+    /**
+     * setting content data
+     * @param data
+     */
+    public void setContentData(String data) {
+        this.contentData = data;
     }
 
     /**
@@ -360,6 +394,7 @@ public class Block {
             txString = txString.substring(0, txString.length() - 1);
         }
         raw += txString + "}," + cert.getFullCertificate() + ",{" + blockHash + "},{" + minerSig + "},{" + minerSigIndex + "}";
+        raw += getContentData();
         return raw;
     }
 }

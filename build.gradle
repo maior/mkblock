@@ -30,5 +30,6 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
+    compile 'org.tukaani:xz:1.8'
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.8.1'
 }
